@@ -161,71 +161,98 @@ public class MainActivity extends Activity {
             //content.setText(fullMessage);
             abortBroadcast();
 
-            if(messages[])
-            AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
-            dialog.setTitle("导航到这里去");
-            dialog.setMessage(fullMessage);
-            dialog.setCancelable(false);
-            dialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            // Intent intent = new Intent(MainActivity.this, Main2Activity.class);
-                            //startActivity(intent);
+            if(fullMessage.charAt(0) == '#' && fullMessage.charAt(6) == '#') {
+                AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
+                dialog.setTitle("发现警情!");
+                String s1 = "", s2="",s3="",s4="";
 
-                            double lat = mLat1;
-                            double lon = mLon1;
-                            LatLng pt1 = new LatLng(lat, lon);
-                            lat = mLat2;
-                            lon = mLon2;
-                            LatLng pt2 = new LatLng(lat, lon);
-                            // 构建 导航参数
-                            NaviParaOption para = new NaviParaOption();
-                            para.startPoint(pt1);
-                            para.startName("从这里开始");
-                            para.endPoint(pt2);
-                            para.endName("到这里结束");
+                if(fullMessage.charAt(19) == 't')
+                   s1 = "门磁：有警情";
+                else
+                   s1 = "门磁：无警情";
 
-                            try {
+                if(fullMessage.charAt(31) == 't')
+                    s2 = "红外1：有警情";
+                else
+                    s2 = "红外1：无警情";
 
-                                BaiduMapNavigation.openBaiduMapNavi(para, MainActivity.this);
 
-                            } catch (BaiduMapAppNotSupportNaviException e) {
-                                e.printStackTrace();
-                                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                                builder.setMessage("您尚未安装百度地图app或app版本过低，点击确认安装？");
-                                builder.setTitle("提示");
-                                builder.setPositiveButton("确认", new OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        dialog.dismiss();
-                                        OpenClientUtil.getLatestBaiduMapApp(MainActivity.this);
-                                    }
-                                });
+                if(fullMessage.charAt(43) == 't')
+                    s3 = "红外2：有警情";
+                else
+                    s3 = "红外2：无警情";
 
-                                builder.setNegativeButton("取消", new OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        dialog.dismiss();
-                                    }
-                                });
+                if(fullMessage.charAt(55) == 't')
+                    s4 = "微波：有警情";
+                else
+                    s4 = "微波：无警情";
 
-                                builder.create().show();
+
+                dialog.setMessage(
+                        s1 + "\n" + s2 + "\n" + s3 + "\n" + s4 + "\n是否导航到目标位置\n"
+                );
+                //dialog.setMessage(fullMessage);
+                dialog.setCancelable(false);
+                dialog.setPositiveButton("是", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // Intent intent = new Intent(MainActivity.this, Main2Activity.class);
+                                //startActivity(intent);
+
+                                double lat = mLat1;
+                                double lon = mLon1;
+                                LatLng pt1 = new LatLng(lat, lon);
+                                lat = mLat2;
+                                lon = mLon2;
+                                LatLng pt2 = new LatLng(lat, lon);
+                                // 构建 导航参数
+                                NaviParaOption para = new NaviParaOption();
+                                para.startPoint(pt1);
+                                para.startName("从这里开始");
+                                para.endPoint(pt2);
+                                para.endName("到这里结束");
+
+                                try {
+
+                                    BaiduMapNavigation.openBaiduMapNavi(para, MainActivity.this);
+
+                                } catch (BaiduMapAppNotSupportNaviException e) {
+                                    e.printStackTrace();
+                                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                                    builder.setMessage("您尚未安装百度地图app或app版本过低，点击确认安装？");
+                                    builder.setTitle("提示");
+                                    builder.setPositiveButton("确认", new OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            dialog.dismiss();
+                                            OpenClientUtil.getLatestBaiduMapApp(MainActivity.this);
+                                        }
+                                    });
+
+                                    builder.setNegativeButton("取消", new OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            dialog.dismiss();
+                                        }
+                                    });
+
+                                    builder.create().show();
+                                }
+                                //try {
+                                //  Intent intent = Intent.getIntent("intent://map/direction?+"destination=latlng:"+lat+","+lon+);
+                                // startActivity(intent);   //启动调用
+                                //}
+                                //catch (URISyntaxException e) {
+                                //  Log.e("intent", e.getMessage());
+                                // }
                             }
-                            //try {
-                            //  Intent intent = Intent.getIntent("intent://map/direction?+"destination=latlng:"+lat+","+lon+);
-                            // startActivity(intent);   //启动调用
-                            //}
-                            //catch (URISyntaxException e) {
-                            //  Log.e("intent", e.getMessage());
-                            // }
                         }
+                );
+                dialog.setNegativeButton("否", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
                     }
-            );
-            dialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                }
-            });
-            dialog.show();
-
+                });
+                dialog.show();
+            }
         }
     }
 
