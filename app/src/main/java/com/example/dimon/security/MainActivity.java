@@ -7,9 +7,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.IntentFilter;
+import android.database.Cursor;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.telephony.SmsMessage;
 import android.util.Log;
 import android.view.View;
@@ -34,10 +36,9 @@ import com.baidu.mapapi.utils.OpenClientUtil;
 
 public class MainActivity extends Activity {
 
-    // 天安门坐标
     double mLat1;
     double mLon1;
-    // 百度大厦坐标
+
     double mLat2 = 30.056858;
     double mLon2 = 119.308194;
 
@@ -49,7 +50,7 @@ public class MainActivity extends Activity {
 
 
     private TextView sender;
-
+    private String address;
     private TextView content;
 
     private IntentFilter receiveFilter;
@@ -117,6 +118,41 @@ public class MainActivity extends Activity {
     }
 
 
+
+
+    public  void searchContacts(Context context){
+
+        //Uri uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_FILTER_URI, searchName);
+
+        Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, address); //根据电话号码查找联系人
+
+        String[] projection = new String[]{ContactsContract.Contacts._ID};
+        Cursor cursor = context.getContentResolver().query(uri, projection, null, null, null);
+        String id = null;
+        if (cursor.moveToFirst()) {
+            id = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.Contacts._ID));
+        }
+        cursor.close();
+        if (id!=null) {
+            String where = ContactsContract.Data._ID+"="+id;
+            projection = new String[]{ContactsContract.Data.DISPLAY_NAME,ContactsContract.CommonDataKinds.Phone.NUMBER};
+            Cursor searchcCursor = context.getContentResolver().query(ContactsContract.Data.CONTENT_URI, projection, where, null, null);
+            //Log.d(tag, searchcCursor.getCount()+"");
+            int nameIndex = searchcCursor.getColumnIndex(projection[0]);
+            int numberIndex = searchcCursor.getColumnIndex(projection[1]);
+            while(searchcCursor.moveToNext()){
+                String name = searchcCursor.getString(nameIndex);
+                String number = searchcCursor.getString(numberIndex);
+                //Log.d(tag, number+":"+name);
+                sender.setText(name);
+            }
+            searchcCursor.close();
+        }
+    }
+
+
+
+
     LocationListener locationListener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
@@ -152,14 +188,16 @@ public class MainActivity extends Activity {
             for (int i = 0; i < messages.length; i++) {
                 messages[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
             }
-            String address = messages[0].getOriginatingAddress();
+            address = messages[0].getOriginatingAddress();
             String fullMessage = "";
             for (SmsMessage message : messages) {
                 fullMessage += message.getMessageBody();
             }
-            sender.setText(address);
+            //sender.setText(address);
             //content.setText(fullMessage);
             abortBroadcast();
+
+            searchContacts(context);
 
             if(fullMessage.charAt(0) == '#' && fullMessage.charAt(6) == '#') {
                 AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
@@ -259,67 +297,6 @@ public class MainActivity extends Activity {
 
 
 
-    /*
-    public void startNavi(View view)
-    {
-        double lat = mLat1;
-        double lon = mLon1;
-        LatLng pt1 = new LatLng(lat, lon);
-        lat = mLat2;
-        lon = mLon2;
-        LatLng pt2 = new LatLng(lat, lon);
-        // 构建 导航参数
-        NaviParaOption para = new NaviParaOption();
-        para.startPoint(pt1);
-        para.startName("从这里开始");
-        para.endPoint(pt2);
-        para.endName("到这里结束");
 
-        try {
 
-            BaiduMapNavigation.openBaiduMapNavi(para, MainActivity.this);
-
-        } catch (BaiduMapAppNotSupportNaviException e) {
-            e.printStackTrace();
-            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-            builder.setMessage("您尚未安装百度地图app或app版本过低，点击确认安装？");
-            builder.setTitle("提示");
-            builder.setPositiveButton("确认", new OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss();
-                    OpenClientUtil.getLatestBaiduMapApp(MainActivity.this);
-                }
-            });
-
-            builder.setNegativeButton("取消", new OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss();
-                }
-            });
-
-            builder.create().show();
-        }
-    }
-    */
-    /*
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        //在activity执行onDestroy时执行mMapView.onDestroy()，实现地图生命周期管理
-        mMapView.onDestroy();
-    }
-    @Override
-    protected void onResume() {
-        super.onResume();
-        //在activity执行onResume时执行mMapView. onResume ()，实现地图生命周期管理
-        mMapView.onResume();
-    }
-    @Override
-    protected void onPause() {
-        super.onPause();
-        //在activity执行onPause时执行mMapView. onPause ()，实现地图生命周期管理
-        mMapView.onPause();
-    } */
     }
