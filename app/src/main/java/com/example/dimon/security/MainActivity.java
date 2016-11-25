@@ -15,6 +15,8 @@ import android.provider.ContactsContract;
 import android.telephony.SmsMessage;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.location.LocationManager;
 import android.location.LocationListener;
@@ -22,6 +24,7 @@ import android.widget.Toast;
 import android.content.Intent;
 
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.baidu.mapapi.SDKInitializer;
@@ -57,6 +60,14 @@ public class MainActivity extends Activity {
 
     private MessageReceiver messageReceiver;
 
+
+
+    ListView contactsView;
+
+    ArrayAdapter<String> adapter;
+
+    List<String> contactsList = new ArrayList<String>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,7 +81,13 @@ public class MainActivity extends Activity {
 
 
         sender = (TextView) findViewById(R.id.sender);
-        content = (TextView) findViewById(R.id.content);
+        //content = (TextView) findViewById(R.id.content);
+
+
+        contactsView = (ListView) findViewById(R.id.contacts_view);
+        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, contactsList);
+        contactsView.setAdapter(adapter);
+        readContacts();
 
 
         receiveFilter = new IntentFilter();
@@ -78,9 +95,6 @@ public class MainActivity extends Activity {
         receiveFilter.setPriority(100);
         messageReceiver = new MessageReceiver();
         registerReceiver(messageReceiver, receiveFilter);
-
-
-
 
         text = (TextView) findViewById(R.id.navi_info);
 
@@ -116,6 +130,28 @@ public class MainActivity extends Activity {
 
 
 
+    private void readContacts() {
+        Cursor cursor = null;
+        int n = 0;
+        try {
+            cursor = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                    null, null, null, null);
+            while (cursor.moveToNext()) {
+                String displayName = cursor.getString(cursor
+                        .getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+                String number = cursor.getString(cursor
+                        .getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                contactsList.add("监测站" +  Integer.toString(n) + "   " + displayName + "   " + number);
+                ++n;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+    }
 
     public  void searchContacts(Context context){
 
