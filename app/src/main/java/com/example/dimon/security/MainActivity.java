@@ -39,19 +39,19 @@ public class MainActivity extends Activity {
     double mLat1;
     double mLon1;
 
-    double mLat2 = 30.056858;
-    double mLon2 = 119.308194;
+    double mLat2;
+    double mLon2;
 
     int flag = 0;
     private LocationManager locationManager;
     private String provider;
-
-
-
+    private String name;
 
     private TextView sender;
     private String address;
     private TextView content;
+
+    private TextView text;
 
     private IntentFilter receiveFilter;
 
@@ -73,8 +73,6 @@ public class MainActivity extends Activity {
         content = (TextView) findViewById(R.id.content);
 
 
-
-
         receiveFilter = new IntentFilter();
         receiveFilter.addAction("android.provider.Telephony.SMS_RECEIVED");
         receiveFilter.setPriority(100);
@@ -84,9 +82,8 @@ public class MainActivity extends Activity {
 
 
 
-        TextView text = (TextView) findViewById(R.id.navi_info);
-        text.setText(String.format("终点:(%f,%f)",
-                mLat2, mLon2));
+        text = (TextView) findViewById(R.id.navi_info);
+
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         List<String>  providerList = locationManager.getProviders(true);
@@ -141,10 +138,10 @@ public class MainActivity extends Activity {
             int nameIndex = searchcCursor.getColumnIndex(projection[0]);
             int numberIndex = searchcCursor.getColumnIndex(projection[1]);
             while(searchcCursor.moveToNext()){
-                String name = searchcCursor.getString(nameIndex);
+                name = searchcCursor.getString(nameIndex);
                 String number = searchcCursor.getString(numberIndex);
                 //Log.d(tag, number+":"+name);
-                sender.setText(name);
+                //sender.setText(name);
             }
             searchcCursor.close();
         }
@@ -198,6 +195,24 @@ public class MainActivity extends Activity {
             abortBroadcast();
 
             searchContacts(context);
+
+
+            int len = name.length();
+            int i;
+            String sub1, sub2;
+            for(i = 0; i < len; i++)
+            {
+                if(name.charAt(i) == ',')
+                    break;
+            }
+            sub1 = name.substring(0, i - 1);
+            sub2 = name.substring(i + 1);
+
+            mLat2 = Double.parseDouble(sub1);
+            mLon2 = Double.parseDouble(sub2);
+
+            text.setText(String.format("终点:(%f,%f)",
+                    mLat2, mLon2));
 
             if(fullMessage.charAt(0) == '#' && fullMessage.charAt(6) == '#') {
                 AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
@@ -294,9 +309,4 @@ public class MainActivity extends Activity {
         }
     }
 
-
-
-
-
-
-    }
+}
