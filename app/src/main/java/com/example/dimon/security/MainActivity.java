@@ -3,6 +3,7 @@ package com.example.dimon.security;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
@@ -51,7 +52,6 @@ public class MainActivity extends Activity {
     private String name;
 
     private TextView sender;
-    private String address;
     private TextView content;
 
     private TextView text;
@@ -153,33 +153,38 @@ public class MainActivity extends Activity {
         }
     }
 
-    public  void searchContacts(Context context){
+    /*
+         * 根据电话号码取得联系人姓名
+         */
 
-        //Uri uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_FILTER_URI, searchName);
+    private void search(String address) {
+        Cursor cursor = null;
+        //int n = 0;
+        try {
+            cursor = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                    null, null, null, null);
+            while (cursor.moveToNext()) {
+                String displayName = cursor.getString(cursor
+                        .getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
 
-        Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, address); //根据电话号码查找联系人
+                String number = cursor.getString(cursor
+                        .getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                //contactsList.add("监测站" +  Integer.toString(n) + "   " + displayName + "   " + number);
+                if(address.equals(number)) {
 
-        String[] projection = new String[]{ContactsContract.Contacts._ID};
-        Cursor cursor = context.getContentResolver().query(uri, projection, null, null, null);
-        String id = null;
-        if (cursor.moveToFirst()) {
-            id = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.Contacts._ID));
-        }
-        cursor.close();
-        if (id!=null) {
-            String where = ContactsContract.Data._ID+"="+id;
-            projection = new String[]{ContactsContract.Data.DISPLAY_NAME,ContactsContract.CommonDataKinds.Phone.NUMBER};
-            Cursor searchcCursor = context.getContentResolver().query(ContactsContract.Data.CONTENT_URI, projection, where, null, null);
-            //Log.d(tag, searchcCursor.getCount()+"");
-            int nameIndex = searchcCursor.getColumnIndex(projection[0]);
-            int numberIndex = searchcCursor.getColumnIndex(projection[1]);
-            while(searchcCursor.moveToNext()){
-                name = searchcCursor.getString(nameIndex);
-                String number = searchcCursor.getString(numberIndex);
-                //Log.d(tag, number+":"+name);
-                //sender.setText(name);
+
+                    name = displayName;
+                    sender.setText(number + " " + name);
+                    //sender.setText(name);
+                    break;
+                }
             }
-            searchcCursor.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
         }
     }
 
@@ -221,7 +226,7 @@ public class MainActivity extends Activity {
             for (int i = 0; i < messages.length; i++) {
                 messages[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
             }
-            address = messages[0].getOriginatingAddress();
+            String address = messages[0].getOriginatingAddress();
             String fullMessage = "";
             for (SmsMessage message : messages) {
                 fullMessage += message.getMessageBody();
@@ -230,11 +235,16 @@ public class MainActivity extends Activity {
             //content.setText(fullMessage);
             abortBroadcast();
 
-            searchContacts(context);
+           // searchContacts(context);
+            if(address.charAt(0) == '+')
+                address = address.substring(3);
+
+            search(address);
 
 
             int len = name.length();
             int i;
+            //int len1 = 1, int len2 = 1;
             String sub1, sub2;
             for(i = 0; i < len; i++)
             {
@@ -242,13 +252,22 @@ public class MainActivity extends Activity {
                     break;
             }
             sub1 = name.substring(0, i - 1);
-            sub2 = name.substring(i + 1);
+            sub2 = name.substring(i+1);
+
+       //     sub1 = sub1.substring(0, 1) + sub1.substring(3);
+         //   sub2 = sub2.substring(0, 2) + sub2.substring(4);
+        //    double x = (double)(Integer.parseInt(sub1));
+        //    double y = (double)(Integer.parseInt(sub2));
+        //    mLat2 = x / (Math.pow(10, i - 3));
+        //    mLon2 = y / (Math.pow(10, len - i - 5));
 
             mLat2 = Double.parseDouble(sub1);
             mLon2 = Double.parseDouble(sub2);
 
-            text.setText(String.format("终点:(%f,%f)",
-                    mLat2, mLon2));
+            //text.setText(String.format("终点:(%f,%f)",
+            //        mLat2, mLon2));
+
+            //name = "";
 
             if(fullMessage.charAt(0) == '#' && fullMessage.charAt(6) == '#') {
                 AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
