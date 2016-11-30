@@ -43,8 +43,8 @@ public class MainActivity extends Activity {
     double mLat1;
     double mLon1;
 
-    double mLat2;
-    double mLon2;
+    double mLat2=31.389;
+    double mLon2=121.716;
 
     int flag = 0;
     private LocationManager locationManager;
@@ -59,8 +59,6 @@ public class MainActivity extends Activity {
     private IntentFilter receiveFilter;
 
     private MessageReceiver messageReceiver;
-
-
 
     ListView contactsView;
 
@@ -169,12 +167,13 @@ public class MainActivity extends Activity {
 
                 String number = cursor.getString(cursor
                         .getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                //contactsList.add("监测站" +  Integer.toString(n) + "   " + displayName + "   " + number);
-                if(address.equals(number)) {
+                String temp;
+                temp = number.substring(0, 3) + number.substring(4, 8) + number.substring(9, 13);
 
+                if(address.equals(temp)) {
 
                     name = displayName;
-                    sender.setText(number + " " + name);
+                    sender.setText(temp + " " + name);
                     //sender.setText(name);
                     break;
                 }
@@ -238,6 +237,8 @@ public class MainActivity extends Activity {
            // searchContacts(context);
             if(address.charAt(0) == '+')
                 address = address.substring(3);
+            if(address.charAt(0) == ' ')
+                address = address.substring(1);
 
             search(address);
 
@@ -251,7 +252,7 @@ public class MainActivity extends Activity {
                 if(name.charAt(i) == ',')
                     break;
             }
-            sub1 = name.substring(0, i - 1);
+            sub1 = name.substring(0, i);
             sub2 = name.substring(i+1);
 
        //     sub1 = sub1.substring(0, 1) + sub1.substring(3);
@@ -264,10 +265,9 @@ public class MainActivity extends Activity {
             mLat2 = Double.parseDouble(sub1);
             mLon2 = Double.parseDouble(sub2);
 
-            //text.setText(String.format("终点:(%f,%f)",
-            //        mLat2, mLon2));
+            text.setText(String.format("终点:(%f,%f)",
+                    mLat2, mLon2));
 
-            //name = "";
 
             if(fullMessage.charAt(0) == '#' && fullMessage.charAt(6) == '#') {
                 AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
@@ -299,6 +299,7 @@ public class MainActivity extends Activity {
                 dialog.setMessage(
                         s1 + "\n" + s2 + "\n" + s3 + "\n" + s4 + "\n是否导航到目标位置\n"
                 );
+
                 //dialog.setMessage(fullMessage);
                 dialog.setCancelable(false);
                 dialog.setPositiveButton("是", new DialogInterface.OnClickListener() {
