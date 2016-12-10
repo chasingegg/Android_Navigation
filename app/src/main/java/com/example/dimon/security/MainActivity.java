@@ -43,8 +43,8 @@ public class MainActivity extends Activity {
     double mLat1;
     double mLon1;
 
-    double mLat2=31.389;
-    double mLon2=121.716;
+    double mLat2;
+    double mLon2;
 
     int flag = 0;
     private LocationManager locationManager;
