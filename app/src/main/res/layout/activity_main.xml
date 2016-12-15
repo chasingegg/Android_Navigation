@@ -17,7 +17,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:padding="10dp"
-            android:text="From:" />
+            android:text="上一次来自:" />
 
         <TextView
             android:id="@+id/sender"

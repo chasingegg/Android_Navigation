@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">security</string>
-    <string name="navi_tip">本功能为调起百度地图Android客户端（V5.0及以上版本）的导航功能，用户必须已安装百度地图客户端，如果没有安装则提示用户下载安装百度地图客户端。</string>
+    <string name="app_name">国家电网安防</string>
+    <string name="navi_tip">本安卓客户端实现了接收报警消息、判定并导航至目标点的功能，并可自主添加监测点。</string>
 
 </resources>

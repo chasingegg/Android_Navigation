@@ -130,17 +130,28 @@ public class MainActivity extends Activity {
 
     private void readContacts() {
         Cursor cursor = null;
-        int n = 0;
         try {
             cursor = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
                     null, null, null, null);
             while (cursor.moveToNext()) {
-                String displayName = cursor.getString(cursor
+                String temp = cursor.getString(cursor
                         .getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
                 String number = cursor.getString(cursor
                         .getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                contactsList.add("监测站" +  Integer.toString(n) + "   " + displayName + "   " + number);
-                ++n;
+                //contactsList.add("监测站" +  Integer.toString(n) + "   " + displayName + "   " + number);
+                int len=temp.length();
+                int i,j;
+                for(i=0;i<len;i++){
+                    if(temp.charAt(i)==',')
+                        break;
+                }
+                for(j=i;j<len;j++){
+                    if(temp.charAt(j)=='@')
+                        break;
+                }
+                String displayName=temp.substring(0,j);
+                String location=temp.substring(j+1);
+                contactsList.add(location+"监测站"  + "   " + displayName + "   " + "正常");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -244,7 +255,7 @@ public class MainActivity extends Activity {
 
 
             int len = name.length();
-            int i;
+            int i,j;
             //int len1 = 1, int len2 = 1;
             String sub1, sub2;
             for(i = 0; i < len; i++)
@@ -252,15 +263,15 @@ public class MainActivity extends Activity {
                 if(name.charAt(i) == ',')
                     break;
             }
+            for(j=i;j<len;j++)
+            {
+                if(name.charAt(j)=='@')
+                    break;
+            }
             sub1 = name.substring(0, i);
-            sub2 = name.substring(i+1);
+            sub2 = name.substring(i+1,j);
 
-       //     sub1 = sub1.substring(0, 1) + sub1.substring(3);
-         //   sub2 = sub2.substring(0, 2) + sub2.substring(4);
-        //    double x = (double)(Integer.parseInt(sub1));
-        //    double y = (double)(Integer.parseInt(sub2));
-        //    mLat2 = x / (Math.pow(10, i - 3));
-        //    mLon2 = y / (Math.pow(10, len - i - 5));
+
 
             mLat2 = Double.parseDouble(sub1);
             mLon2 = Double.parseDouble(sub2);
@@ -272,32 +283,20 @@ public class MainActivity extends Activity {
             if(fullMessage.charAt(0) == '#' && fullMessage.charAt(6) == '#') {
                 AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
                 dialog.setTitle("发现警情!");
-                String s1 = "", s2="",s3="",s4="";
+                String s1 = "", s2="";
 
-                if(fullMessage.charAt(19) == 't')
-                   s1 = "门磁：有警情";
+                if(fullMessage.charAt(20) == 't')
+                   s1 = "门磁1：有警情";
                 else
-                   s1 = "门磁：无警情";
+                   s1 = "门磁1：无警情";
 
-                if(fullMessage.charAt(31) == 't')
-                    s2 = "红外1：有警情";
+                if(fullMessage.charAt(34) == 't')
+                    s2 = "门磁2：有警情";
                 else
-                    s2 = "红外1：无警情";
-
-
-                if(fullMessage.charAt(43) == 't')
-                    s3 = "红外2：有警情";
-                else
-                    s3 = "红外2：无警情";
-
-                if(fullMessage.charAt(55) == 't')
-                    s4 = "微波：有警情";
-                else
-                    s4 = "微波：无警情";
-
+                    s2 = "门磁2：无警情";
 
                 dialog.setMessage(
-                        s1 + "\n" + s2 + "\n" + s3 + "\n" + s4 + "\n是否导航到目标位置\n"
+                        s1 + "\n" + s2 + "\n\n"+ "\n是否导航到目标位置\n"
                 );
 
                 //dialog.setMessage(fullMessage);
