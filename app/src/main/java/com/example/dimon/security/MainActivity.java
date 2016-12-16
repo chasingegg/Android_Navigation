@@ -16,6 +16,7 @@ import android.provider.ContactsContract;
 import android.telephony.SmsMessage;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -37,6 +38,8 @@ import com.baidu.mapapi.navi.NaviParaOption;
 
 
 import com.baidu.mapapi.utils.OpenClientUtil;
+
+
 
 public class MainActivity extends Activity {
 
@@ -86,6 +89,23 @@ public class MainActivity extends Activity {
         adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, contactsList);
         contactsView.setAdapter(adapter);
         readContacts();
+
+        contactsView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
+            @Override
+            public void onItemClick(AdapterView<?> arg0, View view, int position, long id)
+            {
+                String str = contactsList.get(position);
+                //Toast.makeText(MainActivity.this, str, Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(MainActivity.this, Main2Activity.class);
+                //String pos = Integer.toString(position);
+                //Log.d("dasd", pos);
+                intent.putExtra("param", str);
+
+                startActivity(intent);
+            }
+        });
+
 
 
         receiveFilter = new IntentFilter();
