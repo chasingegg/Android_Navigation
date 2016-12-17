@@ -68,6 +68,7 @@ public class MainActivity extends Activity {
     ArrayAdapter<String> adapter;
 
     List<String> contactsList = new ArrayList<String>();
+    List<String> tempList = new ArrayList<String>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,7 +96,7 @@ public class MainActivity extends Activity {
             @Override
             public void onItemClick(AdapterView<?> arg0, View view, int position, long id)
             {
-                String str = contactsList.get(position);
+                String str = tempList.get(position);
                 //Toast.makeText(MainActivity.this, str, Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(MainActivity.this, Main2Activity.class);
                 //String pos = Integer.toString(position);
@@ -172,6 +173,7 @@ public class MainActivity extends Activity {
                 String displayName=temp.substring(0,j);
                 String location=temp.substring(j+1);
                 contactsList.add(location+"监测站"  + "   " + displayName + "   " + "正常");
+                tempList.add(location + " " + displayName + "+" + number);
             }
         } catch (Exception e) {
             e.printStackTrace();
