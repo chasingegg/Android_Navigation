@@ -1,5 +1,6 @@
 package com.example.dimon.security;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
@@ -8,11 +9,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.v4.app.ActivityCompat;
 import android.telephony.SmsMessage;
 import android.util.Log;
 import android.view.View;
@@ -40,16 +43,15 @@ import com.baidu.mapapi.navi.NaviParaOption;
 import com.baidu.mapapi.utils.OpenClientUtil;
 
 
-
 public class MainActivity extends Activity {
 
-    double mLat1;
-    double mLon1;
+    static double mLat1;
+    static double mLon1;
 
     double mLat2;
     double mLon2;
 
-    int flag = 0;
+    static int flag = 0;
     private LocationManager locationManager;
     private String provider;
     private String name;
@@ -78,10 +80,6 @@ public class MainActivity extends Activity {
         SDKInitializer.initialize(getApplicationContext());
 
         setContentView(R.layout.activity_main);
-        //获取地图控件引用
-        //mMapView = (MapView) findViewById(R.id.bmapView);
-
-
         sender = (TextView) findViewById(R.id.sender);
         //content = (TextView) findViewById(R.id.content);
 
@@ -91,11 +89,9 @@ public class MainActivity extends Activity {
         contactsView.setAdapter(adapter);
         readContacts();
 
-        contactsView.setOnItemClickListener(new AdapterView.OnItemClickListener()
-        {
+        contactsView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> arg0, View view, int position, long id)
-            {
+            public void onItemClick(AdapterView<?> arg0, View view, int position, long id) {
                 String str = tempList.get(position);
                 //Toast.makeText(MainActivity.this, str, Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(MainActivity.this, Main2Activity.class);
@@ -108,7 +104,6 @@ public class MainActivity extends Activity {
         });
 
 
-
         receiveFilter = new IntentFilter();
         receiveFilter.addAction("android.provider.Telephony.SMS_RECEIVED");
         receiveFilter.setPriority(100);
@@ -119,29 +114,46 @@ public class MainActivity extends Activity {
 
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        List<String>  providerList = locationManager.getProviders(true);
-        if(providerList.contains(LocationManager.GPS_PROVIDER))
-        {
+        List<String> providerList = locationManager.getProviders(true);
+        if (providerList.contains(LocationManager.GPS_PROVIDER)) {
             provider = LocationManager.GPS_PROVIDER;
-        }
-        else if(providerList.contains(LocationManager.NETWORK_PROVIDER)) {
+        } else if (providerList.contains(LocationManager.NETWORK_PROVIDER)) {
             provider = LocationManager.NETWORK_PROVIDER;
-        }
-        else {
+        } else {
             Toast.makeText(this, "No location provider to use", Toast.LENGTH_SHORT).show();
             return;
         }
         Location location = locationManager.getLastKnownLocation(provider);
-        if(location != null) {
+        if (location != null) {
             mLat1 = location.getLatitude();
             mLon1 = location.getLongitude();
         }
-        locationManager.requestLocationUpdates(provider,5000, 1, locationListener);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        locationManager.requestLocationUpdates(provider, 5000, 1, locationListener);
     }
 
     protected void onDestroy() {
         super.onDestroy();
-        if(locationManager != null) {
+        if (locationManager != null) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
             locationManager.removeUpdates(locationListener);
         }
         unregisterReceiver(messageReceiver);
@@ -159,6 +171,7 @@ public class MainActivity extends Activity {
                         .getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
                 String number = cursor.getString(cursor
                         .getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                number = number.substring(0, 3) + number.substring(4, 8) + number.substring(9, 13);
                 //contactsList.add("监测站" +  Integer.toString(n) + "   " + displayName + "   " + number);
                 int len=temp.length();
                 int i,j;
@@ -265,7 +278,7 @@ public class MainActivity extends Activity {
             }
             //sender.setText(address);
             //content.setText(fullMessage);
-            abortBroadcast();
+            //abortBroadcast();
 
            // searchContacts(context);
             if(address.charAt(0) == '+')
@@ -279,7 +292,7 @@ public class MainActivity extends Activity {
             int len = name.length();
             int i,j;
             //int len1 = 1, int len2 = 1;
-            String sub1, sub2;
+            String sub1, sub2, location;
             for(i = 0; i < len; i++)
             {
                 if(name.charAt(i) == ',')
@@ -292,8 +305,7 @@ public class MainActivity extends Activity {
             }
             sub1 = name.substring(0, i);
             sub2 = name.substring(i+1,j);
-
-
+            location = name.substring(j+1);
 
             mLat2 = Double.parseDouble(sub1);
             mLon2 = Double.parseDouble(sub2);
@@ -302,9 +314,9 @@ public class MainActivity extends Activity {
                     mLat2, mLon2));
 
 
-            if(fullMessage.charAt(0) == '#' && fullMessage.charAt(6) == '#') {
+            if(fullMessage.charAt(0) == '#' && fullMessage.charAt(6) == '#' && fullMessage.charAt(1) == 'A') {
                 AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
-                dialog.setTitle("发现警情!");
+                dialog.setTitle(location + "监测站: 发现警情!");
                 String s1 = "", s2="";
 
                 if(fullMessage.charAt(20) == 't')
