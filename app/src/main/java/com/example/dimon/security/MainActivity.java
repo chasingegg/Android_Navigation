@@ -12,6 +12,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.Location;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -65,6 +66,7 @@ public class MainActivity extends Activity {
 
     private MessageReceiver messageReceiver;
 
+    private MediaPlayer mediaPlayer = new MediaPlayer();
     ListView contactsView;
 
     ArrayAdapter<String> adapter;
@@ -103,6 +105,15 @@ public class MainActivity extends Activity {
             }
         });
 
+        try {
+            //File file = new File(Environment.getExternalStorageDirectory(), "Magic_Mullet.mp3");
+            //mediaPlayer.setDataSource(file.getPath());
+            mediaPlayer = MediaPlayer.create(MainActivity.this, R.raw.alarm2);
+            //mediaPlayer.prepare();
+
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
 
         receiveFilter = new IntentFilter();
         receiveFilter.addAction("android.provider.Telephony.SMS_RECEIVED");
@@ -143,6 +154,10 @@ public class MainActivity extends Activity {
 
     protected void onDestroy() {
         super.onDestroy();
+        if(mediaPlayer != null) {
+            mediaPlayer.stop();
+            mediaPlayer.release();
+        }
         if (locationManager != null) {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling
@@ -315,9 +330,10 @@ public class MainActivity extends Activity {
 
 
             if(fullMessage.charAt(0) == '#' && fullMessage.charAt(6) == '#' && fullMessage.charAt(1) == 'A') {
+                mediaPlayer.start();
                 AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
                 dialog.setTitle(location + "监测站: 发现警情!");
-                String s1 = "", s2="";
+                String s1 = "", s2="", s3="", s4="";
 
                 if(fullMessage.charAt(20) == 't')
                    s1 = "门磁1：有警情";
@@ -329,8 +345,16 @@ public class MainActivity extends Activity {
                 else
                     s2 = "门磁2：无警情";
 
+                if(fullMessage.charAt(45) == 't')
+                    s3 = "红外传感器：有警情";
+                else
+                    s3 = "红外传感器：无警情";
+                if(fullMessage.charAt(57) == 't')
+                    s4 = "微波人体检测：有警情";
+                else
+                    s4 = "微波人体检测：无警情";
                 dialog.setMessage(
-                        s1 + "\n" + s2 + "\n\n"+ "\n是否导航到目标位置\n"
+                        s1 + "\n" + s2 + "\n" + s3 + "\n" + s4 + "\n\n"+ "\n是否导航到目标位置\n"
                 );
 
                 //dialog.setMessage(fullMessage);

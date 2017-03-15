@@ -11,8 +11,10 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.location.Location;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.ContactsContract;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
@@ -28,6 +30,7 @@ import android.location.LocationListener;
 import android.widget.Toast;
 import android.content.Intent;
 
+import java.io.File;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,6 +67,9 @@ public class Main2Activity extends Activity {
     private IntentFilter receiveFilter;
 
     private MessageReceiver messageReceiver;
+
+    private MediaPlayer mediaPlayer1 = new MediaPlayer();
+    private MediaPlayer mediaPlayer2 = new MediaPlayer();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,6 +117,20 @@ public class Main2Activity extends Activity {
         //messageReceiver = new Main2Activity.MessageReceiver();
         //registerReceiver(messageReceiver, receiveFilter);
         //ljh
+        try {
+            //File file = new File(Environment.getExternalStorageDirectory(), "Magic_Mullet.mp3");
+            //mediaPlayer.setDataSource(file.getPath());
+            mediaPlayer1 = MediaPlayer.create(Main2Activity.this, R.raw.safe);
+            mediaPlayer2 = MediaPlayer.create(Main2Activity.this, R.raw.alarm);
+            //mediaPlayer.prepare();
+
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
+
+        //mediaPlayer.start();
+
         t1.setText(s0+"监测站");
         t2.setText("经纬度 \n"+des_lat+','+des_lon);
         t3.setText("号码 \n"+number);
@@ -134,6 +154,7 @@ public class Main2Activity extends Activity {
                 Intent sentIntent = new Intent("SENT_SMS_ACTION");
                 PendingIntent pi = PendingIntent.getBroadcast(Main2Activity.this, 0, sentIntent, 0);
                 smsManager.sendTextMessage(number, null, "SILENCE", pi, null);
+
             }
         });
         //ljh
@@ -164,6 +185,14 @@ public class Main2Activity extends Activity {
     protected void onDestroy()
     {
         super.onDestroy();
+        if(mediaPlayer1 != null) {
+            mediaPlayer1.stop();
+            mediaPlayer1.release();
+        }
+        if(mediaPlayer2 != null) {
+            mediaPlayer2.stop();
+            mediaPlayer2.release();
+        }
         unregisterReceiver(sendStatusReceiver);
         unregisterReceiver(messageReceiver);
     }
@@ -194,8 +223,9 @@ public class Main2Activity extends Activity {
 
             if(address.equals(number)) {
                 if (fullMessage.charAt(0) == 'R') {
+                    mediaPlayer1.start();
                     AlertDialog.Builder dialog = new AlertDialog.Builder(Main2Activity.this);
-                    dialog.setTitle(s0 + "监测站");
+                    dialog.setTitle(s0 + "监测站: 状态报告");
                     String s1 = "收到", s2 = "";
 
                     if (fullMessage.charAt(9) == 'S')
@@ -223,21 +253,43 @@ public class Main2Activity extends Activity {
                 }
                 if (fullMessage.charAt(0) == '#' && fullMessage.charAt(7) == '#' && fullMessage.charAt(1) == 'S') {
                     AlertDialog.Builder dialog = new AlertDialog.Builder(Main2Activity.this);
-                    dialog.setTitle(s0 + "监测站");
-                    String s1 = "", s2 = "";
-
-                    if (fullMessage.charAt(21) == 't')
+                    dialog.setTitle(s0 + "监测站: 状态报告");
+                    String s1 = "", s2 = "",s3="",s4="";
+                    int flag = 0;
+                    if (fullMessage.charAt(21) == 't') {
                         s1 = "门磁1：有警情";
+                        flag = 1;
+                    }
                     else
                         s1 = "门磁1：无警情";
 
-                    if (fullMessage.charAt(35) == 't')
+                    if (fullMessage.charAt(35) == 't') {
                         s2 = "门磁2：有警情";
+                        flag = 1;
+                    }
                     else
                         s2 = "门磁2：无警情";
 
+                    if(fullMessage.charAt(46) == 't') {
+                        s3 = "红外传感器：有警情";
+                        flag = 1;
+                    }
+                    else
+                        s3 = "红外传感器：无警情";
+                    if(fullMessage.charAt(58) == 't') {
+                        s4 = "微波人体检测：有警情";
+                        flag = 1;
+                    }
+                    else
+                        s4 = "微波人体检测：无警情";
+                    if(flag == 1)
+                    {
+                        mediaPlayer2.start();
+                    }
+                    else
+                        mediaPlayer1.start();
                     dialog.setMessage(
-                            s1 + "\n" + s2
+                            s1 + "\n" + s2 + "\n" + s3 + '\n' + s4
                     );
                     dialog.setCancelable(false);
                     dialog.setPositiveButton("好的", new DialogInterface.OnClickListener() {
