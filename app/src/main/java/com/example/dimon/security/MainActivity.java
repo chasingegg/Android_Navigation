@@ -66,7 +66,8 @@ public class MainActivity extends Activity {
 
     private MessageReceiver messageReceiver;
 
-    private MediaPlayer mediaPlayer = new MediaPlayer();
+    private MediaPlayer mediaPlayer_ala = new MediaPlayer();
+    private MediaPlayer mediaPlayer_zhen = new MediaPlayer();
     ListView contactsView;
 
     ArrayAdapter<String> adapter;
@@ -108,7 +109,8 @@ public class MainActivity extends Activity {
         try {
             //File file = new File(Environment.getExternalStorageDirectory(), "Magic_Mullet.mp3");
             //mediaPlayer.setDataSource(file.getPath());
-            mediaPlayer = MediaPlayer.create(MainActivity.this, R.raw.alarm2);
+            mediaPlayer_ala = MediaPlayer.create(MainActivity.this, R.raw.alarm2);
+            mediaPlayer_zhen = MediaPlayer.create(MainActivity.this, R.raw.safe);
             //mediaPlayer.prepare();
 
         } catch(Exception e) {
@@ -154,9 +156,13 @@ public class MainActivity extends Activity {
 
     protected void onDestroy() {
         super.onDestroy();
-        if(mediaPlayer != null) {
-            mediaPlayer.stop();
-            mediaPlayer.release();
+        if(mediaPlayer_ala != null) {
+            mediaPlayer_ala.stop();
+            mediaPlayer_ala.release();
+        }
+        if(mediaPlayer_zhen != null) {
+            mediaPlayer_zhen.stop();
+            mediaPlayer_zhen.release();
         }
         if (locationManager != null) {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -328,9 +334,100 @@ public class MainActivity extends Activity {
             text.setText(String.format("终点:(%f,%f)",
                     mLat2, mLon2));
 
+            if(fullMessage.charAt(0) == 'S' && fullMessage.charAt(1) == 'T' && fullMessage.charAt(7) == 'O') {
+                mediaPlayer_zhen.start();
+                AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
+                dialog.setTitle(location + "监测站: 状态报告");
+                dialog.setMessage("初始化成功！");
+                dialog.setCancelable(false);
+                dialog.setPositiveButton("好的", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                            }
+                        }
+                );
+                dialog.show();
+            }
+            if (fullMessage.charAt(0) == 'R') {
+                mediaPlayer_zhen.start();
+                AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
+                dialog.setTitle(location + "监测站: 状态报告");
+                String s1 = "收到", s2 = "";
 
+                if (fullMessage.charAt(9) == 'S')
+
+                    s2 = "检修命令";
+
+                else
+
+                    s2 = "恢复命令";
+
+                dialog.setMessage(
+                        s1 + s2
+                );
+
+
+                //dialog.setMessage(fullMessage);
+                dialog.setCancelable(false);
+                dialog.setPositiveButton("好的", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                            }
+                        }
+                );
+
+                dialog.show();
+            }
+            if (fullMessage.charAt(0) == '#' && fullMessage.charAt(7) == '#' && fullMessage.charAt(1) == 'S') {
+                AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
+                dialog.setTitle(location + "监测站: 状态报告");
+                String s1 = "", s2 = "",s3="",s4="";
+                int flag = 0;
+                if (fullMessage.charAt(21) == 't') {
+                    s1 = "门磁1：有警情";
+                    flag = 1;
+                }
+                else
+                    s1 = "门磁1：无警情";
+
+                if (fullMessage.charAt(35) == 't') {
+                    s2 = "门磁2：有警情";
+                    flag = 1;
+                }
+                else
+                    s2 = "门磁2：无警情";
+
+                if(fullMessage.charAt(46) == 't') {
+                    s3 = "红外传感器：有警情";
+                    flag = 1;
+                }
+                else
+                    s3 = "红外传感器：无警情";
+                if(fullMessage.charAt(58) == 't') {
+                    s4 = "微波人体检测：有警情";
+                    flag = 1;
+                }
+                else
+                    s4 = "微波人体检测：无警情";
+                if(flag == 1)
+                {
+                    mediaPlayer_ala.start();
+                }
+                else
+                    mediaPlayer_zhen.start();
+                dialog.setMessage(
+                        s1 + "\n" + s2 + "\n" + s3 + '\n' + s4
+                );
+                dialog.setCancelable(false);
+                dialog.setPositiveButton("好的", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+
+                            }
+                        }
+                );
+
+                dialog.show();
+            }
             if(fullMessage.charAt(0) == '#' && fullMessage.charAt(6) == '#' && fullMessage.charAt(1) == 'A') {
-                mediaPlayer.start();
+                mediaPlayer_ala.start();
                 AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
                 dialog.setTitle(location + "监测站: 发现警情!");
                 String s1 = "", s2="", s3="", s4="";

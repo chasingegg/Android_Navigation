@@ -251,6 +251,19 @@ public class Main2Activity extends Activity {
 
                     dialog.show();
                 }
+                if(fullMessage.charAt(0) == 'S' && fullMessage.charAt(1) == 'T' && fullMessage.charAt(7) == 'O') {
+                    mediaPlayer1.start();
+                    AlertDialog.Builder dialog = new AlertDialog.Builder(Main2Activity.this);
+                    dialog.setTitle(s0 + "监测站: 状态报告");
+                    dialog.setMessage("初始化成功！");
+                    dialog.setCancelable(false);
+                    dialog.setPositiveButton("好的", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                }
+                            }
+                    );
+                    dialog.show();
+                }
                 if (fullMessage.charAt(0) == '#' && fullMessage.charAt(7) == '#' && fullMessage.charAt(1) == 'S') {
                     AlertDialog.Builder dialog = new AlertDialog.Builder(Main2Activity.this);
                     dialog.setTitle(s0 + "监测站: 状态报告");
@@ -299,6 +312,97 @@ public class Main2Activity extends Activity {
                             }
                     );
 
+                    dialog.show();
+                }
+
+                if(fullMessage.charAt(0) == '#' && fullMessage.charAt(6) == '#' && fullMessage.charAt(1) == 'A') {
+                    mediaPlayer2.start();
+                    AlertDialog.Builder dialog = new AlertDialog.Builder(Main2Activity.this);
+                    dialog.setTitle(s0 + "监测站: 发现警情!");
+                    String s1 = "", s2="", s3="", s4="";
+
+                    if(fullMessage.charAt(20) == 't')
+                        s1 = "门磁1：有警情";
+                    else
+                        s1 = "门磁1：无警情";
+
+                    if(fullMessage.charAt(34) == 't')
+                        s2 = "门磁2：有警情";
+                    else
+                        s2 = "门磁2：无警情";
+
+                    if(fullMessage.charAt(45) == 't')
+                        s3 = "红外传感器：有警情";
+                    else
+                        s3 = "红外传感器：无警情";
+                    if(fullMessage.charAt(57) == 't')
+                        s4 = "微波人体检测：有警情";
+                    else
+                        s4 = "微波人体检测：无警情";
+                    dialog.setMessage(
+                            s1 + "\n" + s2 + "\n" + s3 + "\n" + s4 + "\n\n"+ "\n是否导航到目标位置\n"
+                    );
+
+                    //dialog.setMessage(fullMessage);
+                    dialog.setCancelable(false);
+                    dialog.setPositiveButton("是", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // Intent intent = new Intent(MainActivity.this, Main2Activity.class);
+                                    //startActivity(intent);
+
+                                    double lat = mLat1;
+                                    double lon = mLon1;
+                                    LatLng pt1 = new LatLng(lat, lon);
+                                    lat = mLat2;
+                                    lon = mLon2;
+                                    LatLng pt2 = new LatLng(lat, lon);
+                                    // 构建 导航参数
+                                    NaviParaOption para = new NaviParaOption();
+                                    para.startPoint(pt1);
+                                    para.startName("从这里开始");
+                                    para.endPoint(pt2);
+                                    para.endName("到这里结束");
+
+                                    try {
+
+                                        BaiduMapNavigation.openBaiduMapNavi(para, Main2Activity.this);
+
+                                    } catch (BaiduMapAppNotSupportNaviException e) {
+                                        e.printStackTrace();
+                                        AlertDialog.Builder builder = new AlertDialog.Builder(Main2Activity.this);
+                                        builder.setMessage("您尚未安装百度地图app或app版本过低，点击确认安装？");
+                                        builder.setTitle("提示");
+                                        builder.setPositiveButton("确认", new OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                dialog.dismiss();
+                                                OpenClientUtil.getLatestBaiduMapApp(Main2Activity.this);
+                                            }
+                                        });
+
+                                        builder.setNegativeButton("取消", new OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                dialog.dismiss();
+                                            }
+                                        });
+
+                                        builder.create().show();
+                                    }
+                                    //try {
+                                    //  Intent intent = Intent.getIntent("intent://map/direction?+"destination=latlng:"+lat+","+lon+);
+                                    // startActivity(intent);   //启动调用
+                                    //}
+                                    //catch (URISyntaxException e) {
+                                    //  Log.e("intent", e.getMessage());
+                                    // }
+                                }
+                            }
+                    );
+                    dialog.setNegativeButton("否", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                        }
+                    });
                     dialog.show();
                 }
             }
